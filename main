@@ -1,0 +1,138 @@
+local _1 = {Vector3.new(3, 413, -1210), Vector3.new(-1017, 414, -1209), Vector3.new(-2124, 418, -2132), Vector3.new(-541, 414, -3345), Vector3.new(-300, 414, -5794), Vector3.new(-306, 423, -7339)} 
+local _2 = game.Players.LocalPlayer 
+local _3 = _2.Character or _2.CharacterAdded:Wait() 
+local _4 = _3:WaitForChild("Humanoid") 
+
+local _5 = game.CoreGui:FindFirstChild("TeleportGui") 
+if _5 then _5:Destroy() end 
+
+local _6 = Instance.new("ScreenGui") 
+_6.Name = "g" 
+_6.Parent = game.CoreGui 
+
+local _7 = Instance.new("Frame") 
+_7.Parent = _6 
+_7.Size = UDim2.new(0, 300, 0, 350) 
+_7.Position = UDim2.new(0.5, -150, 0.35, -175) 
+_7.BackgroundColor3 = Color3.fromRGB(30, 30, 30) 
+_7.BackgroundTransparency = 0.2 
+_7.BorderSizePixel = 2 
+_7.BorderColor3 = Color3.fromRGB(255, 255, 255) 
+_7.Active = true 
+
+local _8 = false 
+
+local _9 = Instance.new("TextButton") 
+_9.Parent = _6 
+_9.Size = UDim2.new(0, 100, 0, 40) 
+_9.Position = UDim2.new(0.5, -50, 0.2, -20) 
+_9.BackgroundColor3 = Color3.fromRGB(150, 150, 150) 
+_9.Text = "Close GUI" 
+_9.TextSize = 16 
+_9.Font = Enum.Font.SourceSansBold 
+_9.TextColor3 = Color3.fromRGB(255, 255, 255) 
+
+_9.MouseButton1Click:Connect(function() 
+    _8 = not _8 
+    _7.Visible = not _8 
+    if _8 then 
+        _9.Text = "Open GUI" 
+    else 
+        _9.Text = "Close GUI" 
+    end 
+end) 
+
+local _10 = Instance.new("TextLabel") 
+_10.Parent = _7 
+_10.Size = UDim2.new(1, 0, 0, 30) 
+_10.Position = UDim2.new(0, 0, 0, 0) 
+_10.Text = "YarımBuçuk GUI" 
+_10.TextColor3 = Color3.fromRGB(255, 255, 255) 
+_10.TextSize = 18 
+_10.Font = Enum.Font.SourceSansBold 
+_10.BackgroundTransparency = 1 
+
+local _11 = Instance.new("Frame") 
+_11.Parent = _7 
+_11.Size = UDim2.new(1, 0, 0.7, 0) 
+_11.Position = UDim2.new(0, 0, 0, 35) 
+_11.BackgroundTransparency = 1 
+
+local _12 = Instance.new("UIListLayout") 
+_12.Parent = _11 
+_12.SortOrder = Enum.SortOrder.LayoutOrder 
+_12.Padding = UDim.new(0, 5) 
+
+local _13 = false 
+local _14 
+
+local function _15(_16) 
+    _13 = true 
+    while _13 do 
+        if _3.PrimaryPart then 
+            _4.PlatformStand = true 
+            _4.WalkSpeed = 0 
+            _3:SetPrimaryPartCFrame(CFrame.new(_16)) 
+            wait(0.1) 
+        end 
+    end 
+    _4.PlatformStand = false 
+    _4.WalkSpeed = 16 
+end 
+
+for _17, _18 in ipairs(_1) do 
+    local _19 = Instance.new("TextButton") 
+    _19.Parent = _11 
+    _19.Size = UDim2.new(1, -10, 0, 40) 
+    _19.Text = "Go to Checkpoint " .. _17 
+    _19.BackgroundColor3 = Color3.fromRGB(50, 150, 50) 
+    _19.TextSize = 15 
+    _19.Font = Enum.Font.SourceSansBold 
+    _19.TextColor3 = Color3.fromRGB(255, 255, 255) 
+
+    _19.MouseButton1Click:Connect(function() 
+        if _13 then 
+            _13 = false 
+            if _14 then 
+                _14:Disconnect() 
+            end 
+        else 
+            _14 = game:GetService("RunService").Heartbeat:Connect(function() 
+                _15(_18) 
+            end) 
+        end 
+    end) 
+end 
+
+local _20 = Instance.new("TextButton") 
+_20.Parent = _7 
+_20.Size = UDim2.new(0.9, 0, 0, 40) 
+_20.Position = UDim2.new(0.05, 0, 0.85, 10) 
+_20.Text = "Stop Teleport" 
+_20.BackgroundColor3 = Color3.fromRGB(200, 50, 50) 
+_20.TextSize = 15 
+_20.Font = Enum.Font.SourceSansBold 
+_20.TextColor3 = Color3.fromRGB(255, 255, 255) 
+
+_20.MouseButton1Click:Connect(function() 
+    _13 = false 
+    if _14 then 
+        _14:Disconnect() 
+    end 
+    _4.PlatformStand = false 
+    _4.WalkSpeed = 16 
+end) 
+
+local _21 = Instance.new("TextButton") 
+_21.Parent = _7 
+_21.Size = UDim2.new(0, 40, 0, 40) 
+_21.Position = UDim2.new(1, -45, 0, 5) 
+_21.Text = "X" 
+_21.BackgroundColor3 = Color3.fromRGB(200, 50, 50) 
+_21.TextSize = 18 
+_21.Font = Enum.Font.SourceSansBold 
+_21.TextColor3 = Color3.fromRGB(255, 255, 255) 
+
+_21.MouseButton1Click:Connect(function() 
+    _6:Destroy() 
+end)
