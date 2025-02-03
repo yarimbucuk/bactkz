@@ -6,141 +6,205 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/yarimbucuk/robloxdcin
 
 
 
-local _1 = {Vector3.new(3, 413, -1210), Vector3.new(-1017, 414, -1209), Vector3.new(-2124, 418, -2132), Vector3.new(-541, 414, -3345), Vector3.new(-300, 414, -5794), Vector3.new(-306, 423, -7339)} 
-local _2 = game.Players.LocalPlayer 
-local _3 = _2.Character or _2.CharacterAdded:Wait() 
-local _4 = _3:WaitForChild("Humanoid") 
+local checkpoints = {
+    Vector3.new(3, 413, -1210),   
+    Vector3.new(-1017, 414, -1209),   
+    Vector3.new(-2124, 418, -2132),   
+    Vector3.new(-541, 414, -3345),   
+    Vector3.new(-300, 414, -5794),   
+    Vector3.new(-306, 423, -7339)    
+}
 
-local _5 = game.CoreGui:FindFirstChild("TeleportGui") 
-if _5 then _5:Destroy() end 
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local _6 = Instance.new("ScreenGui") 
-_6.Name = "g" 
-_6.Parent = game.CoreGui 
+local teleporting = false
+local teleportConnection
+local deathConnection
 
-local _7 = Instance.new("Frame") 
-_7.Parent = _6 
-_7.Size = UDim2.new(0, 300, 0, 350) 
-_7.Position = UDim2.new(0.5, -150, 0.35, -175) 
-_7.BackgroundColor3 = Color3.fromRGB(30, 30, 30) 
-_7.BackgroundTransparency = 0.2 
-_7.BorderSizePixel = 2 
-_7.BorderColor3 = Color3.fromRGB(255, 255, 255) 
-_7.Active = true 
+local function stopLoopTeleport()
+    teleporting = false
+    if teleportConnection then
+        teleportConnection:Disconnect()
+        teleportConnection = nil
+    end
+end
 
-local _8 = false 
+local function characterAdded(newCharacter)
+    stopLoopTeleport()
 
-local _9 = Instance.new("TextButton") 
-_9.Parent = _6 
-_9.Size = UDim2.new(0, 100, 0, 40) 
-_9.Position = UDim2.new(0.5, -50, 0.2, -20) 
-_9.BackgroundColor3 = Color3.fromRGB(150, 150, 150) 
-_9.Text = "Close GUI" 
-_9.TextSize = 16 
-_9.Font = Enum.Font.SourceSansBold 
-_9.TextColor3 = Color3.fromRGB(255, 255, 255) 
+    if deathConnection then
+        deathConnection:Disconnect()
+    end
 
-_9.MouseButton1Click:Connect(function() 
-    _8 = not _8 
-    _7.Visible = not _8 
-    if _8 then 
-        _9.Text = "Open GUI" 
-    else 
-        _9.Text = "Close GUI" 
-    end 
-end) 
+    character = newCharacter
+    humanoid = character:WaitForChild("Humanoid")
+    rootPart = character:WaitForChild("HumanoidRootPart")
 
-local _10 = Instance.new("TextLabel") 
-_10.Parent = _7 
-_10.Size = UDim2.new(1, 0, 0, 30) 
-_10.Position = UDim2.new(0, 0, 0, 0) 
-_10.Text = "YarımBuçuk GUI" 
-_10.TextColor3 = Color3.fromRGB(255, 255, 255) 
-_10.TextSize = 18 
-_10.Font = Enum.Font.SourceSansBold 
-_10.BackgroundTransparency = 1 
+    deathConnection = humanoid.Died:Connect(function()
+        stopLoopTeleport()
+    end)
+end
 
-local _11 = Instance.new("Frame") 
-_11.Parent = _7 
-_11.Size = UDim2.new(1, 0, 0.7, 0) 
-_11.Position = UDim2.new(0, 0, 0, 35) 
-_11.BackgroundTransparency = 1 
+player.CharacterAdded:Connect(characterAdded)
 
-local _12 = Instance.new("UIListLayout") 
-_12.Parent = _11 
-_12.SortOrder = Enum.SortOrder.LayoutOrder 
-_12.Padding = UDim.new(0, 5) 
+local function getVehicle()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("Model") and v:FindFirstChild("Seat") then
+            local seat = v:FindFirstChild("Seat")
+            if seat and seat.Occupant == humanoid then
+                return v 
+            end
+        end
+    end
+    return nil
+end
 
-local _13 = false 
-local _14 
+local function teleportToPosition(targetPosition)
+    if not rootPart or not rootPart.Parent then
+        rootPart = character:FindFirstChild("HumanoidRootPart")
+        if not rootPart then return end
+    end
 
-local function _15(_16) 
-    _13 = true 
-    while _13 do 
-        if _3.PrimaryPart then 
-            _4.PlatformStand = true 
-            _4.WalkSpeed = 0 
-            _3:SetPrimaryPartCFrame(CFrame.new(_16)) 
-            wait(0.1) 
-        end 
-    end 
-    _4.PlatformStand = false 
-    _4.WalkSpeed = 16 
-end 
+    local vehicle = getVehicle()
+    if vehicle then
+        local primaryPart = vehicle.PrimaryPart or vehicle:FindFirstChildWhichIsA("BasePart")
+        if primaryPart then
+            primaryPart.CFrame = CFrame.new(targetPosition) * CFrame.Angles(0, math.rad(90), 0)
+            task.wait(0.1)
+            primaryPart.CFrame = CFrame.new(targetPosition) * CFrame.Angles(0, math.rad(90), 0)
+        end
+    else
+        rootPart.CFrame = CFrame.new(targetPosition)
+        task.wait(0.1)
+        rootPart.CFrame = CFrame.new(targetPosition)
+    end
+end
 
-for _17, _18 in ipairs(_1) do 
-    local _19 = Instance.new("TextButton") 
-    _19.Parent = _11 
-    _19.Size = UDim2.new(1, -10, 0, 40) 
-    _19.Text = "Go to Checkpoint " .. _17 
-    _19.BackgroundColor3 = Color3.fromRGB(50, 150, 50) 
-    _19.TextSize = 15 
-    _19.Font = Enum.Font.SourceSansBold 
-    _19.TextColor3 = Color3.fromRGB(255, 255, 255) 
+local function startLoopTeleport(checkpoint)
+    teleporting = true
+    teleportConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not teleporting then
+            teleportConnection:Disconnect()
+            teleportConnection = nil
+            return
+        end
+        teleportToPosition(checkpoint)
+    end)
+end
 
-    _19.MouseButton1Click:Connect(function() 
-        if _13 then 
-            _13 = false 
-            if _14 then 
-                _14:Disconnect() 
-            end 
-        else 
-            _14 = game:GetService("RunService").Heartbeat:Connect(function() 
-                _15(_18) 
-            end) 
-        end 
-    end) 
-end 
+local gui = Instance.new("ScreenGui")
+gui.Name = "TeleportGui"
+gui.Parent = game.CoreGui
 
-local _20 = Instance.new("TextButton") 
-_20.Parent = _7 
-_20.Size = UDim2.new(0.9, 0, 0, 40) 
-_20.Position = UDim2.new(0.05, 0, 0.85, 10) 
-_20.Text = "Stop Teleport" 
-_20.BackgroundColor3 = Color3.fromRGB(200, 50, 50) 
-_20.TextSize = 15 
-_20.Font = Enum.Font.SourceSansBold 
-_20.TextColor3 = Color3.fromRGB(255, 255, 255) 
+local mainFrame = Instance.new("Frame")
+mainFrame.Parent = gui
+mainFrame.Size = UDim2.new(0, 320, 0, 500)
+mainFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BorderSizePixel = 2
+mainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+mainFrame.Active = true
 
-_20.MouseButton1Click:Connect(function() 
-    _13 = false 
-    if _14 then 
-        _14:Disconnect() 
-    end 
-    _4.PlatformStand = false 
-    _4.WalkSpeed = 16 
-end) 
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Parent = mainFrame
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.Text = "YarımBuçuk GUI"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 18
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.BackgroundTransparency = 1
 
-local _21 = Instance.new("TextButton") 
-_21.Parent = _7 
-_21.Size = UDim2.new(0, 40, 0, 40) 
-_21.Position = UDim2.new(1, -45, 0, 5) 
-_21.Text = "X" 
-_21.BackgroundColor3 = Color3.fromRGB(200, 50, 50) 
-_21.TextSize = 18 
-_21.Font = Enum.Font.SourceSansBold 
-_21.TextColor3 = Color3.fromRGB(255, 255, 255) 
+local toggleButton = Instance.new("TextButton")
+toggleButton.Parent = gui
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0.7, 0, 0.15, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+toggleButton.Text = "Close GUI"
+toggleButton.TextSize = 16
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-_21.MouseButton1Click:Connect(function() 
-    _6:Destroy() 
+local isGuiVisible = true
+
+toggleButton.MouseButton1Click:Connect(function()
+    isGuiVisible = not isGuiVisible
+    mainFrame.Visible = isGuiVisible
+    toggleButton.Text = isGuiVisible and "Close GUI" or "Open GUI"
+end)
+
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Parent = mainFrame
+buttonFrame.Size = UDim2.new(1, -10, 0.7, 0)
+buttonFrame.Position = UDim2.new(0, 0, 0, 80)
+buttonFrame.BackgroundTransparency = 1
+
+local layout = Instance.new("UIListLayout")
+layout.Parent = buttonFrame
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 5)
+
+for i, checkpoint in ipairs(checkpoints) do
+    local button = Instance.new("TextButton")
+    button.Parent = buttonFrame
+    button.Size = UDim2.new(1, -10, 0, 40)
+    button.Text = "Loop TP to Checkpoint " .. i
+    button.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+    button.TextSize = 15
+    button.Font = Enum.Font.SourceSansBold
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    
+    button.MouseButton1Click:Connect(function()
+        if teleporting then
+            stopLoopTeleport()
+        else
+            startLoopTeleport(checkpoint)
+        end
+    end)
+end
+
+local stopButton = Instance.new("TextButton")
+stopButton.Parent = buttonFrame
+stopButton.Size = UDim2.new(0.9, 0, 0, 40)
+stopButton.Text = "Stop Loop TP"
+stopButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+stopButton.TextSize = 15
+stopButton.Font = Enum.Font.SourceSansBold
+stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+stopButton.MouseButton1Click:Connect(function()
+    stopLoopTeleport()
+end)
+
+local reloadButton = Instance.new("TextButton")
+reloadButton.Parent = mainFrame
+reloadButton.Size = UDim2.new(0.9, 0, 0, 40)
+reloadButton.Position = UDim2.new(0.05, 0, 0.85, 0)
+reloadButton.Text = "RELOAD"
+reloadButton.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+reloadButton.TextSize = 15
+reloadButton.Font = Enum.Font.SourceSansBold
+reloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+reloadButton.MouseButton1Click:Connect(function()
+    gui:Destroy()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/yarimbucuk/bactkz/refs/heads/main/main", true))()
+end)
+
+local closeButton = Instance.new("TextButton")
+closeButton.Parent = mainFrame
+closeButton.Size = UDim2.new(0, 40, 0, 40)
+closeButton.Position = UDim2.new(1, -45, 0, 5)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.TextSize = 18
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+closeButton.MouseButton1Click:Connect(function()
+    gui:Destroy()
 end)
